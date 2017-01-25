@@ -1,14 +1,24 @@
 .data
 	bemvindo	:	.asciiz "Bem vindo ao Boteco Simulator!\nEscolha uma das opções abaixo:\n1 - Listar Produtos"
-	listaDeProdutos:	.asciiz "10 - Polar 355ml \n11 - Polar 1000ml"
+	listaDeProdutos	:	.asciiz "[10] Polar 355ml \n[11] Polar 1000ml"
+	
+	tipoCerveja	:	.asciiz "Cerveja"
+	tipoUisque	:	.asciiz "Uisque"
+	
+	
+	polar355	:	.word 10
+	polar355Nome	:	.space 16
+	polar355Tipo	:	.space 4
+	polar355Qtd	:	.word 10
+	polar355Preco	:	.word 2
 
 .text
 main:
 	la $a0, bemvindo
-	jal printMenu
+	jal printMenuSelect
 	nop
-	#beq $a0, 1, listar
-	#nop
+	beq $a0, 1, listar
+	nop
 	beq $a0, 0, exit
 	nop
 	
@@ -18,18 +28,19 @@ main:
 #no registrador $a0 a opção escolhida
 #a opção escolhida é salva em $a0
 #o status da opção é salva em $a1
-printMenu:
+printMenuSelect:
 	li $v0, 51
 	syscall
+	jr $ra
 	nop
 	
 listar:
 	la $a0, listaDeProdutos
-	jal printMenu
+	jal printMenuSelect
 	nop
 	beq $a0, 10, exit
 	nop
 	
 exit:
-	la $v0, 10
+	li $v0, 10
 	syscall
