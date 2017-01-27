@@ -5,7 +5,19 @@
 	tipoCerveja	:	.asciiz "Cerveja"
 	tipoUisque	:	.asciiz "Uisque"
 	
-	ini		:	.word 1
+	# Cada bebida possui os seguintes atributos
+	#	a. Codigo de Busca
+	#	b. Tipo de Bebida:
+	#		1 - Cerveja
+	#		2 - Uisque
+	#		3 - Agua
+	#		4 - Suco
+	#	c. Quantidade em Estoque
+	#	d. Valor unitario
+	
+	# Ponto inicial do registro de bebidas
+	ini		:	.word 1		
+	# Bebidas		
 	polar355	:	.word 10, 1, 5, 2
 	polar1000	:	.word 11, 1, 10, 4
 
@@ -29,12 +41,16 @@ main:
 #	a opção escolhida é salva em $a0
 #	o status da opção é salva em $a1
 
+# Inicio MENU-------------------------------------------------------------
 printMenuSelect:
 	li $v0, 51
 	syscall
 	jr $ra
 	nop
-	
+# Fim MENU-------------------------------------------------------------
+
+
+# Inicio LISTAR PRODUTOS-------------------------------------------------------------
 listar:
 	la $a0, listaDeProdutos
 	jal printMenuSelect
@@ -42,6 +58,11 @@ listar:
 	beq $a1, 0, selecionaBebida
 	nop
 	
+# Fim LISTAR PORODUTOS-------------------------------------------------------------
+
+
+
+# Inicio SELECIONAR BEBIDA-------------------------------------------------------------
 selecionaBebida:
 	or $t1, $zero, $a0		# Armazena o código da bebida em T1
 	jal procuraBebida
@@ -73,6 +94,11 @@ fimProcuraBebida:
 	lw $t6, 12($t0)		# Carrega o preco unitario
 	jr $ra
 	nop
+
+# Fim SELECAO DE BEBIDAS-----------------------------------------------------------------
+
+
+# Fim do PROGRAMA-------------------------------------------------------------
 exit:
 	li $v0, 10
 	syscall
