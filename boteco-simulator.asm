@@ -6,7 +6,7 @@
 	msgSemEstoque	:	.asciiz "Quantidade em estoque insuficiente!\n   Quantidade Atual: "
 	msgVendaSucc	:	.asciiz "Venda completa!\nTotal: R$"
 	
-	msgCaixa	:	.asciiz "Valor em caixa:\n    R$"
+	msgCaixa	:	.asciiz "Valor em caixa:\n    R$ "
 	
 	msgCompra	:	.asciiz "Valor atual de compra\n   R$"
 	msgQtdCompra	:	.asciiz "Quantidade que deseja comprar:\n"
