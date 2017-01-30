@@ -10,9 +10,19 @@
 	
 	msgCompra	:	.asciiz "Valor atual de compra\n   R$"
 	msgQtdCompra	:	.asciiz "Quantidade que deseja comprar:\n"
+	msgCompraSucc	:	.asciiz "Compra bem sucedida!\n  Valor Total: R$"
 	
+	msgEstoque	:	.asciiz "Quantidade em estoque: "
+	
+	msgTipo		:	.asciiz	"Esta bebida é um tipo de "
 	tipoCerveja	:	.asciiz "Cerveja"
-	tipoUisque	:	.asciiz "Uisque"
+	tipoUisque	:	.asciiz "Uísque"
+	tipoAgua	:	.asciiz "Água"
+	tipoSuco	:	.asciiz "Suco"
+	
+	msgValor	:	.asciiz "1 - Ver valor\n2 - Alterar valor"
+	msgValorAtual	:	.asciiz "O valor atual da bebida é de R$ "
+	msgNovoValor	:	.asciiz "Insira o novo valor para a bebida: "
 	
 	# Cada bebida possui os seguintes atributos
 	#	a. Codigo de Busca
@@ -46,6 +56,7 @@ main:
 	nop
 	beq $a0, 3, caixa
 	nop
+	
 	
 #-------------------------------------------------------------------------
 #	Função para imprimir um menu de opções na tela
@@ -94,6 +105,12 @@ opcoesBebida:				# Ações possiveis para cada bebida
 	nop
 	beq $a0, 2, comprar
 	nop
+	beq $a0, 3, estoque
+	nop
+	beq $a0, 4, tipo
+	nop
+	beq $a0, 5, valor
+	nop
 
 # 1 - Vender -------------------------------------------------------------
 vender:
@@ -125,11 +142,11 @@ vendaSucc:
 	la $v0, 56
 	syscall
 	nop
-	j listar
+	j opcoesBebida
 	nop
 vendaFail:
 	li $t3, 0
-	j listar
+	j opcoesBebida
 	nop
 
 # 2 - Comprar----------------------------------------------------------------------------------------
@@ -145,8 +162,102 @@ comprar:
 	la $a0, msgQtdCompra
 	jal printMenuSelect
 	nop
+	or $t3, $a0, $zero	# quantidade a comprar
+	mult $t3, $t7		# valor da compra
+	add $t5, $t5, $t3	# incrementa a quantidade em estoque
+	sw $t5, 8($t0)		# salava a nova qtd na memoria
+	mflo $t7		# valor total da compra
+	sub $s0, $s0, $t7	# subtrai o valor total do caixa (mesmo que fique negativo)
+	la $a0, msgCompraSucc
+	la $v0, 56
+	or $a1, $zero, $t7
+	syscall
+	nop
+	j opcoesBebida
+	nop
 	
+# 3 - Estoque
+estoque:
+	la $a0, msgEstoque
+	or $a1, $zero, $t5
+	la $v0, 56
+	syscall
+	nop
+	j opcoesBebida
+	nop
+
+# 4 - Tipo Bebida
+tipo:
+	beq $t4, 1, tipoCer
+	nop
+	beq $t4, 2, tipoUis
+	nop
+	beq $t4, 3, tipoAgu
+	nop
+	beq $t4, 4, tipoSuc
+	nop
+
+tipoCer:
+	la $a0, msgTipo
+	la $a1, tipoCerveja
+	la $v0, 59
+	syscall
+	nop
+	j tipoVolta
+	nop
+
+tipoUis:
+	la $a0, msgTipo
+	la $a1, tipoUisque
+	la $v0, 59
+	syscall
+	nop
+	j tipoVolta
+	nop
+
+tipoAgu:
+	la $a0, msgTipo
+	la $a1, tipoAgua
+	la $v0, 59
+	syscall
+	nop
+	j tipoVolta
+	nop
+
+tipoSuc:
+	la $a0, msgTipo
+	la $a1, tipoSuco
+	la $v0, 59
+	syscall
+	nop
+	j tipoVolta
+	nop
+
+tipoVolta:
+	j opcoesBebida
+	nop
 	
+
+# 5 - Valor
+valor:
+	la $a0, msgValor
+	jal printMenuSelect
+	nop
+	beq $a0, 1, verValor
+	nop
+	beq $a0, 2, alterarValor
+	nop
+	
+verValor:
+	la $a0, msgValorAtual
+	or $a1, $zero, $t6
+	la $v0, 56
+	syscall
+	nop
+	j opcoesBebida
+	nop
+
+alterarValor:
 # Inicio da BUSCA PELA BEBIDA SELECIONADA-------------------------------------------------------------
 procuraBebida:
 	beq $t1, $t2, fimProcuraBebida
