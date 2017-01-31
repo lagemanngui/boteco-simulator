@@ -1,7 +1,7 @@
 .data
-	bemvindo	:	.asciiz "Bem vindo ao Boteco Simulator!\nEscolha uma das opções abaixo:\n1 - Listar Produtos\n2 - Histórico de Transações\n3 - Caixa\n0 - Sair"
+	bemvindo	:	.asciiz "Bem vindo ao Boteco Simulator!\nEscolha uma das opções abaixo:\n1 - Listar Produtos\n2 - Caixa\n0 - Sair"
 	acoesBebidas	:	.asciiz "Escolha uma ação:\n1 - Vender\n2 - Comprar\n3 - Checar Estoque\n4 - Tipo\n5 - Valor\n0 - Sair"
-	listaDeProdutos	:	.asciiz "[10] Polar 355ml \n[11] Polar 1000ml\n [0] Voltar"
+	listaDeProdutos	:	.asciiz "10 - Polar 355ml \n11 - Polar 1000ml\n12 - Kaiser 355ml\n13 - Schin 1000ml\n14 - Tang 250ml\n15 - Água da Pedra 550ml\n16 - Jack Daniels 750ml\n0 - Voltar"
 	msgVender	:	.asciiz "Insira a quantidade que deseja vender (0 - Voltar):"
 	msgSemEstoque	:	.asciiz "Quantidade em estoque insuficiente!\n   Quantidade Atual: "
 	msgVendaSucc	:	.asciiz "Venda completa!\nTotal: R$"
@@ -24,6 +24,11 @@
 	msgValorAtual	:	.asciiz "O valor atual da bebida é de R$ "
 	msgNovoValor	:	.asciiz "Insira o novo valor para a bebida: "
 	
+	msgNotFound	:	.asciiz "Produto não cadastrado!"
+	
+	lineBreak	:	.asciiz "\n"
+	
+	
 	# Cada bebida possui os seguintes atributos
 	#	a. Codigo de Busca
 	#	b. Tipo de Bebida:
@@ -37,13 +42,27 @@
 	# Ponto inicial do registro de bebidas
 	ini		:	.word 1		
 	# Bebidas		
-	polar355	:	.word 10, 1, 5, 3
-	polar1000	:	.word 11, 1, 10, 4
+	polar355	:	.word 10, 1, 60, 5
+	polar1000	:	.word 11, 1, 26, 12
+	kaiser355	:	.word 12, 1, 48, 3
+	schin1000	:	.word 13, 1, 90, 8
+	tang200		:	.word 14, 4, 30, 2
+	aguaPedra550	:	.word 15, 3, 25, 3
+	jack750		:	.word 16, 2, 10, 99
+	#Ponto final do registro de bebidas
+	fimBebidas	:	.word -1
+	
+	#Historico de transações
+	histVenda	:	.asciiz "Vendeu....."
+	histCompra	:	.asciiz "Comprou...."
+	iniHist		:	.word -1
 
 .text
 li $t1, 0	#	Codigo da bebida
 li $t2, 0	#	Auxiliar na busca do codigo
 li $s0, 0	#	Valor em caixa
+la $s3, iniHist
+add $s3, $s3, 4
 
 
 main:
@@ -54,8 +73,9 @@ main:
 	nop
 	beq $a0, 0, exit
 	nop
-	beq $a0, 3, caixa
+	beq $a0, 2, caixa
 	nop
+	
 	
 	
 #-------------------------------------------------------------------------
@@ -64,8 +84,8 @@ main:
 #	no registrador $a0 a opção escolhida
 #	a opção escolhida é salva em $a0
 #	o status da opção é salva em $a1
-#-------------------------------------------------------------------------
-# Inicio MENU-------------------------------------------------------------
+#-----------------------------------------------------------------------------------
+# Inicio MENU-----------------------------------------------------------------------
 
 printMenuSelect:
 	li $v0, 51
@@ -112,7 +132,7 @@ opcoesBebida:				# Ações possiveis para cada bebida
 	beq $a0, 5, valor
 	nop
 
-# 1 - Vender -------------------------------------------------------------
+# 1 - Vender ---------------------------------------------------------------------------
 vender:
 	la $a0, msgVender
 	jal printMenuSelect
@@ -144,6 +164,7 @@ vendaSucc:
 	nop
 	j opcoesBebida
 	nop
+	
 vendaFail:
 	li $t3, 0
 	j opcoesBebida
@@ -258,6 +279,15 @@ verValor:
 	nop
 
 alterarValor:
+	la $a0, msgNovoValor
+	jal printMenuSelect
+	nop
+	li $t7, 0
+	or $t7, $zero, $a0		# novo valor digitado
+	sw $t7, 12($t0)			# salva o novo valor em memória
+	lw $t6, 12($t0)			# atualiza o registrador do preço e volta para as ações
+	j opcoesBebida
+	nop
 # Inicio da BUSCA PELA BEBIDA SELECIONADA-------------------------------------------------------------
 procuraBebida:
 	beq $t1, $t2, fimProcuraBebida
@@ -268,6 +298,8 @@ procuraBebida:
 	add $t0, $t0, 4		#inicio da busca
 busca:	
 	lw $t3, 0($t0)
+	beq $t3, -1, procuraFail
+	nop
 	bne $t1, $t3, naoAchou
 	nop
 	or $t2, $zero, $t3
@@ -284,6 +316,15 @@ fimProcuraBebida:
 	lw $t5, 8($t0)		# Carrega a quantidade em estoque
 	lw $t6, 12($t0)		# Carrega o preco unitario
 	jr $ra
+	nop
+	
+procuraFail:
+	la $a0, msgNotFound
+	li $a1, 0
+	la $v0, 55
+	syscall
+	nop
+	j listar
 	nop
 
 # Fim SELECAO DE BEBIDAS-----------------------------------------------------------------
